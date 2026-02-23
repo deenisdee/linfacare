@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinfaCare – Seu Guia Completo sobre Linfedema</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --teal:#1a7a6e;--teal-l:#2aa89a;--teal-pale:#e0f4f2;
+  --gold:#d4a84b;--dark:#1c2826;--text:#334240;
+  --muted:#6b8280;--cream:#faf8f4;--danger:#c0392b;--warn:#e67e22;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── TRIAGE OVERLAY ── */
+#triageOverlay{position:fixed;inset:0;z-index:999;overflow-y:auto}
+#triageOverlay.hidden{display:none}
+#screenWelcome{background:linear-gradient(160deg,var(--dark) 0%,#0d3b35 50%,#1a5e54 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;text-align:center}
+#screenQuiz{background:var(--cream);min-height:100vh;display:none;align-items:center;justify-content:center;padding:30px 20px}
+#screenQuiz.act{display:flex}
+#screenResult{background:#f0faf8;min-height:100vh;display:none;overflow-y:auto}
+#screenResult.act{display:block}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.w-inner{max-width:480px;margin:0 auto}
+.w-emoji{font-size:4rem;display:block;margin-bottom:16px;animation:popIn .6s ease}
+.w-badge{display:inline-block;background:rgba(212,168,75,.18);border:1px solid rgba(212,168,75,.4);color:#e8c96a;font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border-radius:100px;margin-bottom:18px}
+.w-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,5vw,2.4rem);color:#fff;line-height:1.25;margin-bottom:14px}
+.w-h1 em{color:#2aa89a;font-style:italic}
+.w-p{color:#8baaa8;font-size:.95rem;line-height:1.8;margin-bottom:32px;font-weight:300}
+.w-p strong{color:#fff}
+.tq-card{background:#fff;border-radius:20px;padding:30px 26px;max-width:520px;width:100%;box-shadow:0 12px 40px rgba(26,122,110,.14)}
+.tq-logo{font-family:'Cormorant Garamond',serif;color:var(--teal);font-size:1.2rem;font-weight:600;text-align:center;margin-bottom:22px;display:block}
+.tq-logo span{color:var(--gold)}
+.tq-bar-bg{height:7px;background:var(--teal-pale);border-radius:4px;overflow:hidden;margin-bottom:7px}
+.tq-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-l));border-radius:4px;transition:width .5s}
+.tq-meta{display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-bottom:20px}
+.tq-q{font-family:'Cormorant Garamond',serif;font-size:1.18rem;color:var(--dark);line-height:1.55;margin-bottom:20px;font-weight:600}
+.tq-opts{display:flex;flex-direction:column;gap:10px}
+.tq-opt{background:#f8fffe;border:2px solid #dde8e7;border-radius:12px;padding:13px 17px;cursor:pointer;font-size:.91rem;font-family:inherit;text-align:left;color:var(--dark);transition:all .18s}
+.tq-opt:hover{border-color:var(--teal);background:var(--teal-pale)}
+.tq-opt.sel{background:var(--teal-pale);border-color:var(--teal);color:var(--teal);font-weight:600}
+.tq-next{width:100%;margin-top:20px;background:var(--teal);color:#fff;border:none;padding:14px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.tq-next:disabled{background:#ccc;cursor:default}
+.tq-next:not(:disabled):hover{background:var(--teal-l)}
+.res-header{background:linear-gradient(135deg,var(--dark),#0d3b35);padding:28px 20px;text-align:center}
+.res-header h1{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.7rem;margin-bottom:6px;font-weight:600}
+.res-header p{color:#8baaa8;font-size:.88rem}
+.res-body{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+.res-stage{border-radius:16px;padding:20px 22px;margin-bottom:16px;border-width:2px;border-style:solid}
+.res-stage-ey{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.res-stage h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--dark);margin-bottom:6px}
+.res-stage p{font-size:.86rem;line-height:1.7;color:#334240}
+.res-stage small{font-size:.74rem;color:var(--muted);font-style:italic;display:block;margin-top:8px}
+.res-member{background:#fff;border-radius:13px;padding:14px 18px;margin-bottom:14px;box-shadow:0 3px 12px rgba(26,122,110,.08);border-left:4px solid var(--teal);font-size:.85rem;color:var(--muted)}
+.res-member b{color:var(--teal)}
+.res-ai{border-radius:11px;padding:11px 15px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;font-size:.83rem;line-height:1.6}
+.res-ai.urg{background:#fde8e6;border:1px solid var(--danger);color:var(--danger)}
+.res-ai.nor{background:#fff;border:1px solid #dde8e7;color:var(--dark)}
+.res-plan{background:#fff;border-radius:13px;padding:16px 18px;margin-bottom:11px;box-shadow:0 3px 12px rgba(26,122,110,.07);border-left:4px solid}
+.res-plan-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.res-plan-item{display:flex;gap:9px;align-items:flex-start;margin-bottom:7px;font-size:.84rem;color:#334240;line-height:1.65}
+.res-cta{background:linear-gradient(135deg,var(--teal),var(--teal-l));border-radius:16px;padding:28px 22px;text-align:center;margin-top:8px}
+.res-cta h3{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.3rem;margin-bottom:8px}
+.res-cta p{color:rgba(255,255,255,.8);font-size:.86rem;margin-bottom:18px;line-height:1.6}
+.btn-enter{background:#fff;color:var(--teal);border:none;padding:14px 36px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .2s}
+.btn-enter:hover{transform:translateY(-2px)}
+
+/* NAV */
+nav{background:var(--dark);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.nav-inner{max-width:900px;margin:0 auto;padding:0 14px;display:flex;align-items:center;gap:10px;height:54px}
+.nav-logo{font-family:'Cormorant Garamond',serif;color:#2aa89a;font-size:1.3rem;font-weight:600;flex-shrink:0}
+.nav-logo span{color:var(--gold)}
+.nav-tabs{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{background:transparent;border:none;color:#8baaa8;padding:7px 10px;border-radius:7px;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .18s;flex-shrink:0}
+.nav-tab.active{background:var(--teal);color:#fff}
+.nav-tab:hover:not(.active){background:rgba(255,255,255,.08);color:#fff}
+
+/* SECTIONS */
+.section{display:none;max-width:880px;margin:0 auto;padding:26px 14px 60px;animation:fadeUp .4s ease}
+.section.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO INTERNO */
+.hero-box{background:linear-gradient(135deg,var(--dark),#1a5e54);border-radius:18px;padding:36px 24px;margin-bottom:24px;text-align:center}
+.hero-box h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,4vw,2.2rem);color:#fff;margin-bottom:10px}
+.hero-box h1 em{color:var(--teal-l);font-style:italic}
+.hero-box p{color:#8baaa8;font-size:.9rem;max-width:440px;margin:0 auto 22px;line-height:1.7;font-weight:300}
+.hero-stats{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--teal-l);display:block}
+.stat-label{color:#6b8a88;font-size:.73rem}
+
+/* CARDS */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{background:#fff;border-radius:14px;padding:18px 16px;box-shadow:0 4px 16px rgba(26,122,110,.09);border-left:4px solid var(--teal);transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(26,122,110,.15)}
+.card-icon{font-size:1.7rem;margin-bottom:7px}
+.card h3{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:5px}
+.card p{font-size:.8rem;color:var(--muted);line-height:1.65;font-weight:300}
+
+/* SECAO TITLES */
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:var(--dark);margin-bottom:5px}
+.sec-title em{color:var(--teal);font-style:italic}
+.sec-sub{color:var(--muted);margin-bottom:20px;font-size:.88rem;font-weight:300}
+.sec-label{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px}
+
+/* ALERT */
+.alert{border-radius:11px;padding:12px 16px;font-size:.84rem;line-height:1.7;margin-bottom:16px;border-left-width:4px;border-left-style:solid}
+.alert-info{background:var(--teal-pale);color:var(--teal);border-left-color:var(--teal)}
+.alert-warn{background:#fff4e5;color:#7a4a00;border-left-color:var(--warn)}
+.alert-danger{background:#fde8e6;color:#7a1a14;border-left-color:var(--danger)}
+
+/* ACCORDION */
+.acc-item{background:#fff;border-radius:13px;margin-bottom:10px;box-shadow:0 4px 16px rgba(26,122,110,.08);overflow:hidden}
+.acc-btn{width:100%;background:none;border:none;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:.91rem;font-weight:700;color:var(--dark);text-align:left;font-family:inherit}
+.acc-btn:hover{background:var(--teal-pale)}
+.acc-arrow{color:var(--teal);transition:transform .3s;flex-shrink:0;margin-left:8px;font-size:1rem}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;font-size:.86rem;color:var(--text);line-height:1.75;padding:0 18px;font-weight:300}
+.acc-item.open .acc-body{max-height:500px;padding:0 18px 16px}
+.acc-body ul{padding-left:18px;line-height:2.1}
+
+/* EXERCISES */
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px;margin-bottom:16px}
+.ex-card{background:#fff;border-radius:13px;padding:16px 13px;box-shadow:0 3px 12px rgba(26,122,110,.08);text-align:center}
+.ex-emoji{font-size:2rem;display:block;margin-bottom:6px}
+.ex-card h3{font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:4px}
+.ex-card p{font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:8px;font-weight:300}
+.ex-tag{background:var(--teal-pale);color:var(--teal);border-radius:20px;padding:3px 9px;font-size:.7rem;font-weight:700}
+
+/* TIPS */
+.tip{background:#fff;border-radius:11px;padding:12px 15px;box-shadow:0 2px 10px rgba(26,122,110,.07);display:flex;gap:11px;align-items:flex-start;margin-bottom:8px}
+.tip-icon{font-size:1.3rem;flex-shrink:0}
+.tip h4{font-size:.86rem;font-weight:700;color:var(--dark);margin-bottom:2px}
+.tip p{font-size:.79rem;color:var(--muted);line-height:1.6;font-weight:300}
+
+/* QUIZ */
+.quiz-wrap{background:#fff;border-radius:18px;padding:24px 20px;box-shadow:0 8px 32px rgba(26,122,110,.12);max-width:520px;margin:0 auto}
+.quiz-bar-bg{height:6px;background:var(--teal-pale);border-radius:3px;margin-bottom:16px;overflow:hidden}
+.quiz-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-l));border-radius:3px;transition:width .5s}
+.quiz-q{font-family:'Cormorant Garamond',serif;font-size:1.12rem;color:var(--dark);margin-bottom:16px;line-height:1.5;font-weight:600}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{background:var(--teal-pale);border:2px solid transparent;border-radius:10px;padding:11px 14px;cursor:pointer;font-size:.87rem;font-family:inherit;text-align:left;color:var(--dark);transition:all .2s}
+.quiz-opt:hover:not(:disabled){border-color:var(--teal);background:#c5ebe7}
+.quiz-opt.correct{background:#d4f5e5;border-color:#27ae60;color:#1a5c38}
+.quiz-opt.wrong{background:#fde8e6;border-color:var(--danger);color:#7a1a14}
+.quiz-opt:disabled{cursor:default}
+.quiz-feedback{margin-top:12px;padding:12px;border-radius:10px;font-size:.84rem;line-height:1.65;display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback.correct{background:#d4f5e5;color:#1a5c38}
+.quiz-feedback.wrong{background:#fde8e6;color:#7a1a14}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.quiz-score-final{text-align:center;padding:20px 0}
+.quiz-score-num{font-family:'Cormorant Garamond',serif;font-size:4rem;color:var(--teal);display:block;margin-bottom:8px;line-height:1}
+
+/* BTN */
+.btn{background:var(--teal);color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn:hover{background:var(--teal-l);transform:translateY(-1px)}
+.btn:disabled{background:#ccc;cursor:default;transform:none}
+
+/* DIARY */
+.diary-form{background:#fff;border-radius:18px;padding:20px 18px;box-shadow:0 8px 32px rgba(26,122,110,.12);max-width:520px;margin-bottom:24px}
+.form-group{margin-bottom:13px}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--dark);margin-bottom:4px}
+input[type=date],select,textarea{width:100%;border:2px solid #dde8e7;border-radius:9px;padding:9px 11px;font-family:inherit;font-size:.86rem;color:var(--dark);background:#fafffe;transition:border .2s}
+input[type=date]:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal)}
+textarea{height:75px;resize:vertical}
+.pain-scale{display:flex;gap:4px;flex-wrap:wrap}
+.pain-btn{width:36px;height:36px;border-radius:7px;border:2px solid #dde8e7;background:#fff;font-weight:700;cursor:pointer;font-size:.83rem;transition:all .2s;font-family:inherit}
+.pain-btn.sel{background:var(--teal);color:#fff;border-color:var(--teal)}
+.entry{background:#fff;border-radius:11px;padding:12px 15px;margin-bottom:8px;box-shadow:0 2px 10px rgba(0,0,0,.06);border-left:3px solid var(--teal-l);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.entry-date{font-size:.71rem;color:var(--muted)}
+.entry-text{font-size:.84rem;color:var(--text);margin-top:2px;font-weight:300}
+.pain-badge{background:var(--teal-pale);color:var(--teal);border-radius:20px;padding:3px 9px;font-size:.71rem;font-weight:700;white-space:nowrap}
+
+/* URGENCY */
+.urg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:24px}
+.urg-card{background:#fff;border-radius:12px;padding:14px 12px;box-shadow:0 3px 12px rgba(192,57,43,.09);border-left:4px solid var(--danger)}
+.urg-icon{font-size:1.4rem;margin-bottom:5px}
+.urg-card h3{font-size:.85rem;font-weight:700;color:var(--dark);margin-bottom:3px}
+.urg-card p{font-size:.78rem;color:var(--muted);line-height:1.6;font-weight:300}
+
+/* PROFILE BANNER */
+.profile-banner{background:var(--teal-pale);border:2px solid var(--teal);border-radius:13px;padding:14px 18px;margin-bottom:20px;font-size:.84rem}
+.profile-banner b{color:var(--teal)}
+
+/* FOOTER */
+footer{background:var(--dark);color:#6b8a88;text-align:center;padding:16px;font-size:.76rem;margin-top:40px}
+footer strong{color:var(--teal-l)}
+
+@media(max-width:600px){
+  .card-grid{grid-template-columns:1fr 1fr}
+  .ex-grid{grid-template-columns:1fr 1fr}
+  .hero-stats{gap:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TRIAGE OVERLAY ══ -->
+<div id="triageOverlay">
+
+  <!-- BOAS VINDAS -->
+  <div id="screenWelcome">
+    <div class="w-inner">
+      <span class="w-emoji">💧</span>
+      <div class="w-badge">Bem-vindo ao LinfaCare</div>
+      <h1 class="w-h1">Descubra o melhor tratamento<br/><em>para o seu caso</em></h1>
+      <p class="w-p">Responda <strong>8 perguntas rápidas</strong> sobre seus sintomas e receba um <strong>plano personalizado</strong> gratuito em menos de 2 minutos.</p>
+      <button class="tq-next" style="max-width:320px;margin:0 auto" onclick="startQuiz()">🚀 Fazer o Quiz Gratuito</button>
+      <p style="color:#4a7a78;font-size:.76rem;margin-top:14px">Leva menos de 2 minutos • 100% gratuito</p>
+    </div>
+  </div>
+
+  <!-- QUIZ TRIAGEM -->
+  <div id="screenQuiz">
+    <div class="tq-card">
+      <span class="tq-logo">Linfa<span>Care</span></span>
+      <div class="tq-bar-bg"><div class="tq-bar-fill" id="tqBar" style="width:12.5%"></div></div>
+      <div class="tq-meta"><span id="tqNum">Pergunta 1 de 8</span><span id="tqPct">12%</span></div>
+      <p class="tq-q" id="tqQ"></p>
+      <div class="tq-opts" id="tqOpts"></div>
+      <button class="tq-next" id="tqNext" onclick="tqNext()" disabled>Próxima →</button>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="screenResult">
+    <div class="res-header">
+      <div style="font-size:2.2rem;margin-bottom:8px">🎯</div>
+      <h1>Seu Plano Personalizado</h1>
+      <p>Baseado nas suas respostas — salve ou tire print desta tela!</p>
+    </div>
+    <div class="res-body" id="resBody"></div>
+  </div>
+
+</div>
+<!-- ══ FIM OVERLAY ══ -->
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">Linfa<span>Care</span></div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" onclick="show('home',this)">🏠 Início</button>
+      <button class="nav-tab" onclick="show('causas',this)">🔍 Causas</button>
+      <button class="nav-tab" onclick="show('tratamento',this)">💊 Tratamento</button>
+      <button class="nav-tab" onclick="show('exercicios',this)">🏃 Exercícios</button>
+      <button class="nav-tab" onclick="show('dicas',this)">💡 Dicas</button>
+      <button class="nav-tab" onclick="show('quiz',this)">🧠 Quiz</button>
+      <button class="nav-tab" onclick="show('diario',this)">📓 Diário</button>
+      <button class="nav-tab" onclick="show('urgencia',this)">🚨 Urgência</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="section active">
+  <div class="hero-box">
+    <h1>Bem-vindo ao <em>LinfaCare</em></h1>
+    <p>Seu guia completo sobre linfedema — causas, tratamentos, exercícios e acompanhamento diário.</p>
+    <div class="hero-stats">
+      <div><span class="stat-num">170M+</span><span class="stat-label">afetados no mundo</span></div>
+      <div><span class="stat-num">90%</span><span class="stat-label">melhora c/ tratamento</span></div>
+      <div><span class="stat-num">CDT</span><span class="stat-label">padrão ouro</span></div>
+    </div>
+  </div>
+  <div id="profileBanner" class="profile-banner" style="display:none"></div>
+  <div class="alert alert-info">ℹ️ <b>Conteúdo educativo.</b> Sempre consulte um médico ou linfoterapista certificado para orientação individualizada.</div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">💧</div>
+      <h3>Definição</h3>
+      <p>Acúmulo de linfa nos tecidos causando inchaço crônico por dano ou má formação do sistema linfático.</p>
+    </div>
+    <div class="card" style="border-left-color:var(--gold)">
+      <div class="card-icon">⚠️</div>
+      <h3>É crônico?</h3>
+      <p>Sim. Sem cura, mas altamente controlável. Com tratamento correto a maioria leva vida normal e ativa.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🩺</div>
+      <h3>Diagnóstico</h3>
+      <p>Avaliação clínica, medidas de circunferência e, quando necessário, linfocintilografia ou ecodoppler.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌿</div>
+      <h3>Qualidade de vida</h3>
+      <p>Com autocuidado consistente é possível reduzir o volume do membro e prevenir complicações graves.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CAUSAS -->
+<div id="causas" class="section">
+  <h2 class="sec-title">Causas do <em>Linfedema</em></h2>
+  <p class="sec-sub">Os dois tipos principais e seus fatores de risco</p>
+  <div class="card-grid" style="margin-bottom:22px">
+    <div class="card" style="border-left-color:#9b59b6">
+      <div class="card-icon">🧬</div>
+      <h3>Tipo 1 – Primário</h3>
+      <p>Malformação do sistema linfático desde o nascimento. Pode surgir em qualquer fase da vida.</p>
+    </div>
+    <div class="card" style="border-left-color:var(--danger)">
+      <div class="card-icon">🏥</div>
+      <h3>Tipo 2 – Secundário</h3>
+      <p>O mais comum. Causado por dano ao sistema linfático por doenças, cirurgias ou infecções.</p>
+    </div>
+  </div>
+  <div class="sec-label">Principais causas do tipo secundário</div>
+  <div class="card-grid" style="margin-bottom:22px">
+    <div class="card"><div class="card-icon">🎗️</div><h3>Câncer e tratamento</h3><p>Remoção de linfonodos, radioterapia e compressão tumoral dos vasos linfáticos.</p></div>
+    <div class="card" style="border-left-color:var(--warn)"><div class="card-icon">🦟</div><h3>Filariose Linfática</h3><p>Parasita por mosquitos. A causa mais comum no mundo, afetando países tropicais.</p></div>
+    <div class="card"><div class="card-icon">🔪</div><h3>Cirurgias</h3><p>Cirurgias vasculares, ortopédicas ou remoção de gânglios linfáticos.</p></div>
+    <div class="card"><div class="card-icon">🦠</div><h3>Infecções repetidas</h3><p>Erisipela e celulite recorrentes danificam progressivamente os vasos linfáticos.</p></div>
+    <div class="card" style="border-left-color:var(--gold)"><div class="card-icon">⚖️</div><h3>Obesidade</h3><p>Sobrecarga do sistema linfático favorecendo o aparecimento de linfedema.</p></div>
+    <div class="card"><div class="card-icon">💉</div><h3>Radioterapia</h3><p>Causa fibrose nos vasos linfáticos, mesmo anos após o tratamento oncológico.</p></div>
+  </div>
+  <div class="sec-label">Estágios do Linfedema</div>
+  <div class="card-grid">
+    <div class="card" style="border-left-color:#27ae60"><div class="card-icon">0️⃣</div><h3>Estágio 0 – Latente</h3><p>Dano existe, mas sem inchaço visível. Cuidado preventivo essencial.</p></div>
+    <div class="card" style="border-left-color:#f39c12"><div class="card-icon">1️⃣</div><h3>Estágio 1 – Reversível</h3><p>Inchaço melhora ao elevar o membro. Tratamento muito eficaz nessa fase.</p></div>
+    <div class="card" style="border-left-color:var(--warn)"><div class="card-icon">2️⃣</div><h3>Estágio 2 – Irreversível</h3><p>Inchaço não reduz mais com elevação. Fibrose começa a se instalar.</p></div>
+    <div class="card" style="border-left-color:var(--danger)"><div class="card-icon">3️⃣</div><h3>Estágio 3 – Elefantíase</h3><p>Inchaço volumoso e endurecido. Tratamento intensivo e multidisciplinar.</p></div>
+  </div>
+</div>
+
+<!-- TRATAMENTO -->
+<div id="tratamento" class="section">
+  <h2 class="sec-title">Tratamentos</h2>
+  <p class="sec-sub">Clique para expandir cada opção</p>
+  <div id="accordion">
+    <div class="acc-item open">
+      <button class="acc-btn" onclick="toggleAcc(this)"><span>👑 CDT – Terapia Descongestiva Combinada (padrão ouro)</span><span class="acc-arrow">▼</span></button>
+      <div class="acc-body"><p style="margin-bottom:8px">A CDT combina quatro pilares essenciais:</p><ul><li><b>Drenagem Linfática Manual (DLM):</b> massagem especializada que estimula o fluxo de linfa.</li><li><b>Bandagens multicamadas:</b> aplicadas pelo terapeuta para reduzir volume entre sessões.</li><li><b>Exercícios terapêuticos:</b> realizados com bandagem, auxiliam o bombeamento linfático.</li><li><b>Cuidados com a pele:</b> hidratação, higiene e prevenção de infecções.</li></ul><p style="margin-top:8px">Tem duas fases: <b>Intensiva</b> (redução) e <b>Manutenção</b> (prevenção de recidiva).</p></div>
+    </div>
+    <div class="acc-item">
+      <button class="acc-btn" onclick="toggleAcc(this)"><span>🧦 Meias e Mangueiras de Compressão</span><span class="acc-arrow">▼</span></button>
+      <div class="acc-body"><ul><li>Prescritas e medidas individualmente por profissional de saúde.</li><li>Usar durante o dia, especialmente em atividades físicas e viagens aéreas.</li><li>Substituir a cada 4–6 meses ou quando perderem elasticidade.</li><li>Existem classes de compressão (1 a 4) – o profissional indicará a ideal.</li><li>Nunca usar à noite, salvo orientação médica específica.</li></ul></div>
+    </div>
+    <div class="acc-item">
+      <button class="acc-btn" onclick="toggleAcc(this)"><span>🤖 Compressão Pneumática Intermitente</span><span class="acc-arrow">▼</span></button>
+      <div class="acc-body"><p>Dispositivo mecânico que infla e desinfla sequencialmente promovendo drenagem linfática. Usado como complemento à CDT, nunca como substituto. Contraindicado em infecção ativa, trombose aguda e insuficiência cardíaca grave.</p></div>
+    </div>
+    <div class="acc-item">
+      <button class="acc-btn" onclick="toggleAcc(this)"><span>💊 Medicamentos</span><span class="acc-arrow">▼</span></button>
+      <div class="acc-body"><ul><li><b>Antibióticos:</b> indispensáveis no tratamento de erisipela/celulite.</li><li><b>Benzopironas:</b> usadas em alguns países com resultados variáveis.</li><li><b>Diuréticos:</b> geralmente NÃO indicados – podem piorar o quadro.</li></ul><p style="margin-top:8px;font-style:italic">Nunca tome medicamentos sem orientação médica.</p></div>
+    </div>
+    <div class="acc-item">
+      <button class="acc-btn" onclick="toggleAcc(this)"><span>🔪 Cirurgia</span><span class="acc-arrow">▼</span></button>
+      <div class="acc-body"><ul><li><b>Anastomose Linfovenosa (LVA):</b> conecta vasos linfáticos a veias para criar novos caminhos.</li><li><b>Transferência de linfonodos vascularizados:</b> transplante de linfonodos saudáveis.</li><li><b>Lipoaspiração:</b> remove excesso de tecido adiposo em casos fibróticos avançados.</li></ul></div>
+    </div>
+    <div class="acc-item">
+      <button class="acc-btn" onclick="toggleAcc(this)"><span>🌿 Abordagens Complementares</span><span class="acc-arrow">▼</span></button>
+      <div class="acc-body"><ul><li><b>Kinesio taping:</b> pode auxiliar na drenagem em alguns casos.</li><li><b>Laserterapia de baixa intensidade:</b> evidências crescentes de benefícios.</li><li><b>Hidroterapia:</b> pressão da água ajuda a reduzir o inchaço.</li><li><b>Yoga e pilates adaptados:</b> ajudam na mobilidade e redução do estresse.</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXERCÍCIOS -->
+<div id="exercicios" class="section">
+  <h2 class="sec-title">Exercícios <em>Terapêuticos</em></h2>
+  <p class="sec-sub">Pratique sempre com a meia ou bandagem de compressão</p>
+  <div class="alert alert-warn">⚠️ Realize os exercícios sempre com compressão. Consulte seu terapeuta antes de começar qualquer rotina.</div>
+  <div class="ex-grid">
+    <div class="ex-card"><span class="ex-emoji">🦵</span><h3>Elevação do Membro</h3><p>Eleve o membro acima do coração por 20–30 min, 2–3x ao dia.</p><span class="ex-tag">Drenagem passiva</span></div>
+    <div class="ex-card"><span class="ex-emoji">🚶</span><h3>Caminhada</h3><p>20–30 minutos regulares. O movimento muscular bombeia linfa naturalmente.</p><span class="ex-tag">Aeróbico leve</span></div>
+    <div class="ex-card"><span class="ex-emoji">🏊</span><h3>Natação / Hidroginástica</h3><p>A pressão da água auxilia na drenagem. Ótima opção de baixo impacto.</p><span class="ex-tag">Hidroterapia</span></div>
+    <div class="ex-card"><span class="ex-emoji">🧘</span><h3>Respiração Diafragmática</h3><p>Inspire fundo expandindo o abdômen, expire devagar. 10 repetições.</p><span class="ex-tag">Drenagem central</span></div>
+    <div class="ex-card"><span class="ex-emoji">🦶</span><h3>Flexão do Tornozelo</h3><p>Dobre e estique os pés, 20 rep. Ativa a bomba da panturrilha.</p><span class="ex-tag">MMII</span></div>
+    <div class="ex-card"><span class="ex-emoji">✋</span><h3>Abre e Fecha a Mão</h3><p>Para MMSS. 20 rep com braço elevado, com força.</p><span class="ex-tag">MMSS</span></div>
+    <div class="ex-card"><span class="ex-emoji">🚴</span><h3>Bicicleta no Ar</h3><p>Deitado, simule pedalar por 1–2 minutos. Ótimo para membros inferiores.</p><span class="ex-tag">Mobilidade</span></div>
+    <div class="ex-card"><span class="ex-emoji">🤸</span><h3>Alongamentos Suaves</h3><p>Alongue os membros afetados por 20–30 segundos sem dor.</p><span class="ex-tag">Flexibilidade</span></div>
+  </div>
+  <div class="alert alert-danger">🚫 <b>Evite:</b> alta intensidade sem orientação, pesos excessivos, calor intenso (sauna, banho muito quente) e ficar parado por longos períodos.</div>
+</div>
+
+<!-- DICAS -->
+<div id="dicas" class="section">
+  <h2 class="sec-title">Dicas de <em>Autocuidado</em></h2>
+  <p class="sec-sub">Pequenas atitudes fazem grande diferença no dia a dia</p>
+
+  <div class="sec-label">🌿 Cuidados com a Pele</div>
+  <div class="tip"><span class="tip-icon">🧴</span><div><h4>Hidrate todos os dias</h4><p>Use creme neutro após o banho. Pele hidratada é menos propensa a rachaduras e infecções.</p></div></div>
+  <div class="tip"><span class="tip-icon">🌡️</span><div><h4>Evite temperaturas extremas</h4><p>Calor excessivo (sauna, banho muito quente) dilata os vasos e piora o inchaço.</p></div></div>
+  <div class="tip"><span class="tip-icon">🦟</span><div><h4>Proteja-se de picadas e cortes</h4><p>Use repelente, luvas ao jardinar, sapatos fechados. Qualquer ferida pode causar infecção grave.</p></div></div>
+  <div class="tip"><span class="tip-icon">✂️</span><div><h4>Cuidado ao cortar unhas</h4><p>Corte reto, sem machucar as cutículas. Prefira profissional para procedimentos nos pés.</p></div></div>
+
+  <div class="sec-label">🍽️ Alimentação</div>
+  <div class="tip"><span class="tip-icon">💧</span><div><h4>Hidrate-se bem</h4><p>Beba pelo menos 2 litros de água por dia. A desidratação piora o linfedema, não a água!</p></div></div>
+  <div class="tip"><span class="tip-icon">🧂</span><div><h4>Reduza o sódio</h4><p>Excesso de sal retém líquidos. Prefira alimentos naturais e temperos sem sal.</p></div></div>
+  <div class="tip"><span class="tip-icon">🥦</span><div><h4>Anti-inflamatórios naturais</h4><p>Frutas vermelhas, cúrcuma, gengibre e ômega-3 (peixes, linhaça) ajudam a reduzir inflamação.</p></div></div>
+  <div class="tip"><span class="tip-icon">⚖️</span><div><h4>Mantenha peso saudável</h4><p>Obesidade agrava significativamente o linfedema. Perda de peso traz melhora importante.</p></div></div>
+
+  <div class="sec-label">✈️ Viagens e Dia a Dia</div>
+  <div class="tip"><span class="tip-icon">✈️</span><div><h4>Em voos, use sempre a compressão</h4><p>Pressão reduzida na cabine favorece inchaço. Levante-se a cada hora e beba água.</p></div></div>
+  <div class="tip"><span class="tip-icon">👗</span><div><h4>Roupas sem pressão excessiva</h4><p>Evite elásticos apertados e joias no membro afetado. Prefira roupas confortáveis.</p></div></div>
+  <div class="tip"><span class="tip-icon">🛌</span><div><h4>Eleve o membro ao dormir</h4><p>Use travesseiros para elevar levemente o membro durante o sono.</p></div></div>
+  <div class="tip"><span class="tip-icon">💉</span><div><h4>Injeções e pressão arterial</h4><p>Evite injeções, coletas de sangue e aferição de pressão no membro afetado.</p></div></div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="section">
+  <h2 class="sec-title">Quiz <em>Educativo</em></h2>
+  <p class="sec-sub">Teste seus conhecimentos sobre linfedema — 10 perguntas</p>
+  <div class="quiz-wrap" id="quizWrap">
+    <div class="quiz-bar-bg"><div class="quiz-bar-fill" id="qBar" style="width:10%"></div></div>
+    <p id="qNum" style="font-size:.76rem;color:var(--muted);margin-bottom:8px">Pergunta 1 de 10</p>
+    <p class="quiz-q" id="qText"></p>
+    <div class="quiz-opts" id="qOpts"></div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+    <div class="quiz-nav">
+      <span id="qScore" style="font-size:.86rem;color:var(--muted)">Acertos: 0</span>
+      <button class="btn" id="qNext" onclick="nextQ()" disabled>Próxima →</button>
+    </div>
+  </div>
+  <div id="quizResult" style="display:none">
+    <div class="quiz-wrap quiz-score-final">
+      <span class="quiz-score-num" id="qFinalScore"></span>
+      <h3 id="qMsg" style="margin-bottom:6px"></h3>
+      <p id="qSub" style="color:var(--muted);font-size:.86rem;margin-bottom:20px"></p>
+      <button class="btn" onclick="restartQuiz()">Refazer Quiz</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIÁRIO -->
+<div id="diario" class="section">
+  <h2 class="sec-title">Diário de <em>Sintomas</em></h2>
+  <p class="sec-sub">Registre como você está e compartilhe com seu terapeuta</p>
+  <div class="diary-form">
+    <div class="form-group"><label>📅 Data</label><input type="date" id="dDate"></div>
+    <div class="form-group"><label>📍 Membro afetado</label>
+      <select id="dMember">
+        <option>Membro inferior esquerdo</option><option>Membro inferior direito</option>
+        <option>Ambos membros inferiores</option><option>Membro superior esquerdo</option>
+        <option>Membro superior direito</option><option>Ambos membros superiores</option>
+      </select>
+    </div>
+    <div class="form-group"><label>🔥 Nível de inchaço (0–10)</label>
+      <div class="pain-scale" id="painScale">
+        <button class="pain-btn" onclick="selPain(this,0)">0</button>
+        <button class="pain-btn" onclick="selPain(this,1)">1</button>
+        <button class="pain-btn" onclick="selPain(this,2)">2</button>
+        <button class="pain-btn" onclick="selPain(this,3)">3</button>
+        <button class="pain-btn" onclick="selPain(this,4)">4</button>
+        <button class="pain-btn" onclick="selPain(this,5)">5</button>
+        <button class="pain-btn" onclick="selPain(this,6)">6</button>
+        <button class="pain-btn" onclick="selPain(this,7)">7</button>
+        <button class="pain-btn" onclick="selPain(this,8)">8</button>
+        <button class="pain-btn" onclick="selPain(this,9)">9</button>
+        <button class="pain-btn" onclick="selPain(this,10)">10</button>
+      </div>
+    </div>
+    <div class="form-group"><label>😊 Como você está hoje?</label>
+      <select id="dMood"><option>😊 Bem</option><option>😐 Regular</option><option>😔 Mal</option><option>😣 Muito mal</option></select>
+    </div>
+    <div class="form-group"><label>📝 Observações</label><textarea id="dNote" placeholder="Descreva seus sintomas, tratamentos realizados hoje..."></textarea></div>
+    <button class="btn" onclick="saveDiary()" style="width:100%">💾 Salvar Registro</button>
+    <p id="dHint" style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:6px">Selecione o nível de inchaço para salvar</p>
+  </div>
+  <h3 style="font-size:.93rem;font-weight:700;margin-bottom:11px;color:var(--dark)">Registros recentes</h3>
+  <div id="dEntries"><p style="color:var(--muted);font-size:.86rem">Nenhum registro ainda. Comece hoje!</p></div>
+</div>
+
+<!-- URGÊNCIA -->
+<div id="urgencia" class="section">
+  <h2 class="sec-title">🚨 Sinais de <em>Alerta</em></h2>
+  <p class="sec-sub">Saiba quando procurar atendimento de urgência</p>
+  <div class="alert alert-danger" style="font-weight:700">🚨 VEJA UM MÉDICO IMEDIATAMENTE se apresentar qualquer um dos sinais abaixo.</div>
+  <div class="urg-grid">
+    <div class="urg-card"><div class="urg-icon">🔴</div><h3>Vermelhidão com calor e febre</h3><p>Pode indicar erisipela ou celulite — pode evoluir para sepse sem tratamento imediato.</p></div>
+    <div class="urg-card"><div class="urg-icon">🤒</div><h3>Febre acima de 38°C</h3><p>Especialmente com piora rápida do inchaço e mal-estar geral.</p></div>
+    <div class="urg-card"><div class="urg-icon">💧</div><h3>Secreção ou feridas abertas</h3><p>Linforréia ou ferida que não cicatriza requer avaliação médica urgente.</p></div>
+    <div class="urg-card"><div class="urg-icon">📈</div><h3>Inchaço com piora súbita</h3><p>Especialmente se unilateral, doloroso e de início rápido — pode indicar trombose.</p></div>
+    <div class="urg-card"><div class="urg-icon">💜</div><h3>Roxo ou cianose</h3><p>Alteração para roxo ou azulado indica comprometimento vascular grave.</p></div>
+    <div class="urg-card"><div class="urg-icon">😣</div><h3>Dor intensa e súbita</h3><p>Dor forte e repentina diferente da dor habitual no membro afetado.</p></div>
+  </div>
+  <div class="sec-label">Como prevenir complicações</div>
+  <div class="tip"><span class="tip-icon">🧼</span><div><h4>Higiene rigorosa</h4><p>Lave o membro diariamente com sabonete neutro e seque bem, especialmente entre os dedos.</p></div></div>
+  <div class="tip"><span class="tip-icon">🔍</span><div><h4>Inspeção diária da pele</h4><p>Observe vermelhidão, feridas, bolhas ou alterações de temperatura. Identificar cedo é essencial.</p></div></div>
+  <div class="tip"><span class="tip-icon">📋</span><div><h4>Não interrompa o tratamento</h4><p>A fase de manutenção é permanente. Abandonar as meias de compressão leva à progressão da doença.</p></div></div>
+</div>
+
+<footer>
+  <strong>LinfaCare</strong> – Aplicativo educativo sobre linfedema<br>
+  Este conteúdo não substitui orientação médica profissional.
+</footer>
+
+<script>
+// ── QUIZ DE TRIAGEM ──
+const TQS = [
+  {q:"Você percebeu inchaço em algum membro do corpo?", opts:["Sim, em braço ou mão","Sim, em perna ou pé","Sim, em ambos os dois","Não tenho certeza ainda"], key:"membro"},
+  {q:"Há quanto tempo você tem esse inchaço?", opts:["Menos de 1 mês","Entre 1 e 6 meses","Entre 6 meses e 2 anos","Mais de 2 anos"], key:"tempo"},
+  {q:"Você já passou por alguma dessas situações?", opts:["Cirurgia para câncer com remoção de gânglios","Radioterapia em alguma região do corpo","Cirurgia ortopédica ou vascular","Nenhuma dessas"], key:"causa"},
+  {q:"O inchaço melhora quando você eleva o membro afetado?", opts:["Sim, melhora bastante","Melhora um pouco","Não melhora mais","Nunca tentei fazer isso"], key:"elevacao"},
+  {q:"Você sente dor, peso ou tensão no membro afetado?", opts:["Sim, dor intensa","Sim, peso e desconforto frequente","Dor leve e ocasional","Não sinto dor nenhuma"], key:"dor"},
+  {q:"Já teve episódios de vermelhidão ou febre no membro?", opts:["Sim, várias vezes","Sim, uma ou duas vezes","Nunca aconteceu isso","Não sei identificar"], key:"infeccao"},
+  {q:"Você já faz algum tratamento para o linfedema?", opts:["Sim, faço drenagem linfática","Sim, uso meia de compressão","Sim, faço os dois","Ainda não faço nada"], key:"tratamento"},
+  {q:"Como está seu peso corporal atualmente?", opts:["Peso adequado para minha altura","Sobrepeso leve","Obesidade moderada","Obesidade grave"], key:"peso"},
+];
+let tqIdx=0, tqAns={}, tqSel=null;
+
+function startQuiz() {
+  document.getElementById('screenWelcome').style.display='none';
+  document.getElementById('screenQuiz').classList.add('act');
+  loadTQ();
+}
+
+function loadTQ() {
+  const q = TQS[tqIdx];
+  const pct = Math.round(((tqIdx+1)/TQS.length)*100);
+  document.getElementById('tqBar').style.width = pct+'%';
+  document.getElementById('tqNum').textContent = `Pergunta ${tqIdx+1} de ${TQS.length}`;
+  document.getElementById('tqPct').textContent = pct+'% concluído';
+  document.getElementById('tqQ').textContent = q.q;
+  const opts = document.getElementById('tqOpts');
+  opts.innerHTML = '';
+  q.opts.forEach((o,i) => {
+    const b = document.createElement('button');
+    b.className = 'tq-opt';
+    b.innerHTML = `<span style="margin-right:8px">⬜</span>${o}`;
+    b.onclick = () => {
+      document.querySelectorAll('.tq-opt').forEach(x=>{x.classList.remove('sel');x.innerHTML=`<span style="margin-right:8px">⬜</span>`+x.textContent.trim();});
+      b.classList.add('sel');
+      b.innerHTML = `<span style="margin-right:8px">✅</span>${o}`;
+      tqSel = i;
+      document.getElementById('tqNext').disabled = false;
+    };
+    opts.appendChild(b);
+  });
+  document.getElementById('tqNext').disabled = true;
+  tqSel = null;
+  document.getElementById('tqNext').textContent = tqIdx+1===TQS.length ? 'Ver meu plano →' : 'Próxima →';
+}
+
+function tqNext() {
+  tqAns[TQS[tqIdx].key] = tqSel;
+  tqIdx++;
+  if(tqIdx >= TQS.length) { showResult(); return; }
+  loadTQ();
+}
+
+function showResult() {
+  document.getElementById('screenQuiz').classList.remove('act');
+  document.getElementById('screenResult').classList.add('act');
+
+  const a = tqAns;
+  let estagio = 'inicial';
+  if(a.tempo >= 2) estagio = 'moderado';
+  if(a.elevacao >= 2) estagio = 'avancado';
+  const risco = (a.infeccao <= 1 || a.dor === 0) ? 'alto' : 'baixo';
+  const membroTxt = a.membro===0 ? 'membro superior (braço/mão)' : a.membro===1 ? 'membro inferior (perna/pé)' : 'ambos os membros';
+  const fezCirurgia = a.causa <= 1;
+
+  // Save to sessionStorage
+  sessionStorage.setItem('linfaProfile', JSON.stringify({estagio, risco, membroTxt}));
+
+  const estagios = {
+    inicial: {label:'Estágio Inicial (1)', cor:'#27ae60', bg:'#d4f5e5', desc:'Seu linfedema parece estar em estágio inicial. Ótima notícia: é quando o tratamento é mais eficaz e os resultados aparecem mais rápido!'},
+    moderado: {label:'Estágio Moderado (1–2)', cor:'#e67e22', bg:'#fff4e5', desc:'Seu linfedema tem algum tempo de evolução. O tratamento é muito eficaz, mas exige consistência e acompanhamento profissional contínuo.'},
+    avancado: {label:'Estágio Avançado (2–3)', cor:'#c0392b', bg:'#fde8e6', desc:'Seu linfedema indica possível fibrose instalada. Tratamento intensivo com equipe especializada é fundamental para recuperar qualidade de vida.'},
+  };
+  const est = estagios[estagio];
+
+  const alertas = [];
+  if(a.tratamento===3) alertas.push({urg:true, icon:'🚨', txt:'Você ainda não faz nenhum tratamento – procure um linfoterapista certificado o quanto antes para iniciar a CDT'});
+  if(risco==='alto') alertas.push({urg:true, icon:'⚠️', txt:'Você tem histórico de infecções – converse com seu médico sobre antibioticoprofilaxia preventiva'});
+  if(fezCirurgia) alertas.push({urg:false, icon:'🎗️', txt:'Por ter histórico oncológico, procure linfoterapista especializado em linfedema pós-câncer'});
+  if(a.peso>=2) alertas.push({urg:false, icon:'⚖️', txt:'O controle do peso é fundamental no seu caso – considere acompanhamento nutricional'});
+
+  const planos = [
+    {fase:'AGORA (essa semana)', cor:'#c0392b', itens: a.tratamento===3
+      ? ['Agendar consulta com linfoterapista certificado','Obter prescrição médica para meia de compressão','Iniciar exercícios de elevação do membro e respiração diafragmática']
+      : ['Verificar se sua meia ainda tem elasticidade (trocar a cada 4–6 meses)','Manter rotina de drenagem linfática sem interrupções','Checar cuidados com a pele diariamente']},
+    {fase:'CURTO PRAZO (1 mês)', cor:'#e67e22', itens:['Iniciar ou intensificar a CDT com profissional especializado','Estabelecer rotina de exercícios terapêuticos diários','Registrar sintomas no diário para monitorar evolução']},
+    {fase:'MANUTENÇÃO (para sempre)', cor:'#1a7a6e', itens:['Usar meia de compressão todos os dias durante as atividades','Manter hidratação da pele diariamente','Evitar calor intenso, cortes e picadas no membro afetado','Consultas regulares com linfoterapista a cada 3–6 meses']},
+  ];
+
+  document.getElementById('resBody').innerHTML = `
+    <div class="res-stage" style="background:${est.bg};border-color:${est.cor}">
+      <div class="res-stage-ey" style="color:${est.cor}">📊 Provável estágio identificado</div>
+      <h3>${est.label}</h3>
+      <p>${est.desc}</p>
+      <small>⚠️ Resultado orientativo. Apenas um profissional de saúde faz o diagnóstico oficial.</small>
+    </div>
+    <div class="res-member">📍 Você relatou inchaço no <b>${membroTxt}</b>. As recomendações foram ajustadas para essa região.</div>
+    ${alertas.length ? `<p style="font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:10px">🔴 Pontos de atenção</p>${alertas.map(al=>`<div class="res-ai ${al.urg?'urg':'nor'}"><span style="font-size:1.1rem;flex-shrink:0">${al.icon}</span><p>${al.txt}</p></div>`).join('')}` : ''}
+    <p style="font-size:.88rem;font-weight:700;color:var(--dark);margin:16px 0 10px">📋 Seu Plano de Ação</p>
+    ${planos.map(p=>`
+      <div class="res-plan" style="border-left-color:${p.cor}">
+        <div class="res-plan-label" style="color:${p.cor}">${p.fase}</div>
+        ${p.itens.map(it=>`<div class="res-plan-item"><span style="color:${p.cor};font-weight:700;flex-shrink:0">✓</span><span>${it}</span></div>`).join('')}
+      </div>
+    `).join('')}
+    <div class="res-cta">
+      <h3>Explore o app completo</h3>
+      <p>Tratamentos detalhados, exercícios, dicas, diário de sintomas e muito mais.</p>
+      <button class="btn-enter" onclick="enterApp()">Acessar o LinfaCare completo →</button>
+    </div>
+  `;
+  document.getElementById('screenResult').scrollTop = 0;
+}
+
+function enterApp() {
+  document.getElementById('triageOverlay').classList.add('hidden');
+  // Show profile banner
+  const profile = sessionStorage.getItem('linfaProfile');
+  if(profile) {
+    const p = JSON.parse(profile);
+    const b = document.getElementById('profileBanner');
+    b.style.display='block';
+    b.innerHTML=`✅ <b>Seu perfil:</b> Membro: <b>${p.membroTxt}</b> | Estágio estimado: <b>${p.estagio}</b> | Risco: <b>${p.risco}</b>`;
+  }
+}
+
+// Check if already done this session
+if(sessionStorage.getItem('linfaProfile')) {
+  enterApp();
+}
+
+// ── NAVEGAÇÃO ──
+function show(id, tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  tab.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── ACCORDION ──
+function toggleAcc(btn) {
+  btn.closest('.acc-item').classList.toggle('open');
+}
+
+// ── QUIZ ──
+const questions = [
+  { q:"Qual é a causa mais comum de linfedema no mundo?", opts:["Câncer de mama","Filariose linfática","Cirurgia ortopédica","Obesidade"], c:1, f:"A filariose linfática (mosquitos) é a causa mais frequente globalmente, especialmente em países tropicais." },
+  { q:"O linfedema tem cura?", opts:["Sim, com cirurgia","Sim, com antibióticos","Não, mas é controlável","Sim, ao emagrecer"], c:2, f:"O linfedema é crônico, sem cura, mas com tratamento adequado a maioria controla muito bem os sintomas." },
+  { q:"O que é a CDT – Terapia Descongestiva Combinada?", opts:["Um medicamento","Um tratamento cirúrgico","DLM + bandagem + exercícios + cuidados com a pele","Uma técnica de acupuntura"], c:2, f:"A CDT é o padrão ouro: Drenagem Linfática Manual, bandagem multicamadas, exercícios e cuidados com a pele." },
+  { q:"Os exercícios devem ser realizados:", opts:["Sem nenhuma compressão","Com meia elástica ou bandagem","Só dentro da água","Só com supervisão hospitalar"], c:1, f:"Exercícios devem ser feitos com compressão. A contração muscular + compressão cria a melhor bomba linfática." },
+  { q:"Qual alimento AJUDA no controle do linfedema?", opts:["Alimentos ricos em sódio","Alimentos fritos","Frutas vermelhas e ômega-3","Refrigerantes"], c:2, f:"Frutas vermelhas e ômega-3 têm propriedades anti-inflamatórias que auxiliam no controle do linfedema." },
+  { q:"Quando procurar médico IMEDIATAMENTE?", opts:["Leve inchaço no fim do dia","Pele seca no membro","Vermelhidão, febre e piora súbita","Inchaço que melhora elevando"], c:2, f:"Vermelhidão, calor e febre são sinais de erisipela/celulite – infecção grave que exige antibióticos urgentes." },
+  { q:"Em viagens aéreas, quem tem linfedema deve:", opts:["Evitar beber água","Usar meia e caminhar a cada hora","Retirar a meia","Tomar diurético antes"], c:1, f:"Em voos use sempre a meia, levante-se a cada hora e hidrate-se bem." },
+  { q:"No estágio 1, o inchaço:", opts:["Nunca melhora","Causa elefantíase","Melhora ao elevar o membro","É só estético"], c:2, f:"No estágio 1 (reversível), o inchaço melhora com elevação. É a fase onde o tratamento é mais eficaz." },
+  { q:"Diuréticos são indicados para o linfedema?", opts:["Sim, são a 1ª escolha","Sim, os naturais","Não, podem piorar o quadro","Sim, nas crises"], c:2, f:"Diuréticos geralmente não são indicados e podem piorar ao desidratar o organismo." },
+  { q:"Sobre hidratação, o que é CORRETO?", opts:["Água piora o inchaço","Deve restringir líquidos","Hidratação adequada NÃO piora o linfedema","Beber menos de 1L/dia"], c:2, f:"Beber água não piora o linfedema. A hidratação (2L/dia) é essencial para o sistema linfático!" },
+];
+
+let qIdx=0, qScore=0, qAnswered=false;
+
+function loadQ() {
+  const q = questions[qIdx];
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qNum').textContent = `Pergunta ${qIdx+1} de ${questions.length}`;
+  document.getElementById('qBar').style.width = `${((qIdx+1)/questions.length)*100}%`;
+  const opts = document.getElementById('qOpts');
+  opts.innerHTML = '';
+  q.opts.forEach((o,i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = o;
+    b.onclick = () => answer(i);
+    opts.appendChild(b);
+  });
+  document.getElementById('qFeedback').className = 'quiz-feedback';
+  document.getElementById('qNext').disabled = true;
+  qAnswered = false;
+}
+
+function answer(i) {
+  if(qAnswered) return;
+  qAnswered = true;
+  const q = questions[qIdx];
+  const btns = document.querySelectorAll('.quiz-opt');
+  btns.forEach(b => b.disabled = true);
+  btns[q.c].classList.add('correct');
+  if(i !== q.c) btns[i].classList.add('wrong');
+  else qScore++;
+  const fb = document.getElementById('qFeedback');
+  fb.textContent = (i===q.c?'✅ ':'❌ ') + q.f;
+  fb.className = 'quiz-feedback show ' + (i===q.c?'correct':'wrong');
+  document.getElementById('qScore').textContent = `Acertos: ${qScore}`;
+  document.getElementById('qNext').disabled = false;
+}
+
+function nextQ() {
+  qIdx++;
+  if(qIdx >= questions.length) {
+    document.getElementById('quizWrap').style.display='none';
+    document.getElementById('quizResult').style.display='block';
+    document.getElementById('qFinalScore').textContent = `${qScore}/${questions.length}`;
+    const pct = (qScore/questions.length)*100;
+    const [msg,sub] = pct>=80?['🏆 Excelente!','Você tem ótimo conhecimento sobre linfedema!']:pct>=60?['👍 Muito bom!','Continue explorando o app!']:['📚 Continue aprendendo!','Releia as seções de Causas e Tratamento.'];
+    document.getElementById('qMsg').textContent = msg;
+    document.getElementById('qSub').textContent = sub;
+    return;
+  }
+  loadQ();
+}
+
+function restartQuiz() {
+  qIdx=0; qScore=0;
+  document.getElementById('quizWrap').style.display='block';
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('qScore').textContent='Acertos: 0';
+  loadQ();
+}
+
+loadQ();
+
+// ── DIÁRIO ──
+document.getElementById('dDate').value = new Date().toISOString().split('T')[0];
+let selPainVal = null;
+const entries = [];
+
+function selPain(btn, val) {
+  document.querySelectorAll('.pain-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selPainVal = val;
+  document.getElementById('dHint').style.display='none';
+}
+
+function saveDiary() {
+  if(selPainVal===null){document.getElementById('dHint').style.display='block';return;}
+  const e = {
+    date: document.getElementById('dDate').value,
+    member: document.getElementById('dMember').value,
+    mood: document.getElementById('dMood').value,
+    note: document.getElementById('dNote').value,
+    pain: selPainVal
+  };
+  entries.unshift(e);
+  renderEntries();
+  document.getElementById('dNote').value='';
+  selPainVal=null;
+  document.querySelectorAll('.pain-btn').forEach(b=>b.classList.remove('sel'));
+}
+
+function renderEntries() {
+  const c = document.getElementById('dEntries');
+  if(!entries.length){c.innerHTML='<p style="color:var(--muted);font-size:.86rem">Nenhum registro ainda.</p>';return;}
+  c.innerHTML = entries.slice(0,10).map(e=>`
+    <div class="entry">
+      <div>
+        <div class="entry-date">${e.date} | ${e.member} | ${e.mood}</div>
+        <div class="entry-text">${e.note||'Sem observações.'}</div>
+      </div>
+      <span class="pain-badge">Inchaço: ${e.pain}/10</span>
+    </div>
+  `).join('');
+}
+
+// ── PROFILE BANNER (via sessionStorage) ──
+const profile = sessionStorage.getItem('linfaProfile');
+if(profile) {
+  const p = JSON.parse(profile);
+  const b = document.getElementById('profileBanner');
+  b.style.display='block';
+  b.innerHTML=`✅ <b>Seu perfil do Quiz de Triagem:</b> Membro: <b>${p.membroTxt}</b> | Estágio estimado: <b>${p.estagio}</b> | Risco: <b>${p.risco}</b>`;
+}
+</script>
+</body>
+</html>
